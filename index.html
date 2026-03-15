@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporal Inflow Anomaly Tracker - Assam Border Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="top-bar">
+        <h1>Temporal Inflow Anomaly Tracker</h1>
+        <div class="date-selector">
+            <label for="dateRange">Analysis Period:</label>
+            <select id="dateRange">
+                <option value="6m">Last 6 Months</option>
+                <option value="1y" selected>Last 1 Year</option>
+                <option value="2y">Last 2 Years</option>
+                <option value="all">All Data</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <nav>
+                <a href="#upload" class="nav-item active" data-view="upload">Upload Data</a>
+                <a href="#dashboard" class="nav-item disabled" data-view="dashboard">Dashboard</a>
+                <a href="#anomaly-detection" class="nav-item disabled" data-view="anomaly-detection">Anomaly Detection</a>
+                <a href="#geographic-map" class="nav-item disabled" data-view="geographic-map">Geographic Map</a>
+                <a href="#predictive" class="nav-item disabled" data-view="predictive">Predictive Analytics</a>
+                <a href="#comparative" class="nav-item disabled" data-view="comparative">Comparative Analysis</a>
+                <a href="#age-analysis" class="nav-item disabled" data-view="age-analysis">Age Group Analysis</a>
+                <a href="#pin-analysis" class="nav-item disabled" data-view="pin-analysis">PIN Analysis</a>
+                <a href="#pattern-recognition" class="nav-item disabled" data-view="pattern-recognition">Pattern Recognition</a>
+                <a href="#alerts" class="nav-item disabled" data-view="alerts">Alert System</a>
+                <a href="#correlation" class="nav-item disabled" data-view="correlation">Correlation Analysis</a>
+                <a href="#policy-timeline" class="nav-item disabled" data-view="policy-timeline">Policy Timeline</a>
+                <a href="#data-quality" class="nav-item disabled" data-view="data-quality">Data Quality</a>
+                <a href="#reports" class="nav-item disabled" data-view="reports">Generate Reports</a>
+                <a href="#data-export" class="nav-item disabled" data-view="data-export">Data Export</a>
+                <a href="#about" class="nav-item" data-view="about">About</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div id="upload-view" class="view active">
+                <div class="upload-section">
+                    <h2>Upload Dataset</h2>
+                    <p class="upload-instructions">Upload a CSV file containing Aadhaar monthly enrollment data. The file should include the following columns:</p>
+                    <ul class="required-columns">
+                        <li><strong>Date</strong> - Enrollment date (e.g., 01-09-2025)</li>
+                        <li><strong>State</strong> - State name (e.g., Assam)</li>
+                        <li><strong>District</strong> - District name (e.g., Bajali)</li>
+                        <li><strong>Pincode</strong> - PIN code (e.g., 781375)</li>
+                        <li><strong>Age 0 5</strong> - Enrollments for age 0-5</li>
+                        <li><strong>Age 5 17</strong> - Enrollments for age 5-17</li>
+                        <li><strong>Age 18 Greater</strong> - Enrollments for age 18+</li>
+                    </ul>
+                    <div class="upload-area">
+                        <input type="file" id="datasetUpload" accept=".csv" style="display: none;">
+                        <button id="uploadBtn" class="upload-btn">Choose CSV File</button>
+                        <p id="uploadStatus" class="upload-status"></p>
+                    </div>
+                    <div class="sample-download">
+                        <p>Need a template?</p>
+                        <button id="downloadTemplateBtn" class="template-btn">Download Sample CSV Template</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboard-view" class="view">
+                <div class="time-filter">
+                    <label>Time Range:</label>
+                    <select id="timeFilter">
+                        <option value="all">All Time</option>
+                        <option value="30">Last 30 Days</option>
+                        <option value="60">Last 60 Days</option>
+                        <option value="90">Last 90 Days</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <input type="date" id="startDate" style="display:none;">
+                    <input type="date" id="endDate" style="display:none;">
+                </div>
+                
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-label">Total PINs Monitored</div>
+                        <div class="card-value" id="totalPins">--</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">High-Risk PINs</div>
+                        <div class="card-value alert" id="highRiskPins">--</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Latest Anomaly</div>
+                        <div class="card-value" id="latestAnomaly">--</div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <h2>PIN-wise Risk Heatmap</h2>
+                    <div id="heatmap" class="heatmap"></div>
+                </div>
+
+                <div class="chart-section">
+                    <h2>Enrollment Trends with Policy Markers</h2>
+                    <div id="timeSeriesChart" class="time-series-chart"></div>
+                </div>
+            </div>
+
+            <div id="pin-analysis-view" class="view">
+                <h2>PIN Code Detail Analysis</h2>
+                <div class="pin-selector">
+                    <label for="pinSelect">Select PIN Code:</label>
+                    <select id="pinSelect"></select>
+                </div>
+                <div id="pinDetail" class="pin-detail"></div>
+            </div>
+
+            <div id="anomaly-detection-view" class="view">
+                <h2>Anomaly Detection</h2>
+                <div class="anomaly-controls">
+                    <label>Detection Method:</label>
+                    <select id="anomalyMethod">
+                        <option value="zscore">Z-Score (Statistical)</option>
+                        <option value="iqr">IQR Method</option>
+                        <option value="growth">Growth Rate Threshold</option>
+                    </select>
+                    <label>Sensitivity:</label>
+                    <select id="anomalySensitivity">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div id="anomalyResults" class="anomaly-results"></div>
+            </div>
+
+            <div id="geographic-map-view" class="view">
+                <h2>Geographic Distribution</h2>
+                <div class="map-controls">
+                    <label>
+                        <input type="checkbox" id="showBorderLines" checked> Show Border Lines
+                    </label>
+                    <label>
+                        <input type="checkbox" id="showHeatmap" checked> Show Heat Intensity
+                    </label>
+                    <label>
+                        <input type="checkbox" id="clusterMarkers"> Cluster Markers
+                    </label>
+                </div>
+                <div id="geoMap" class="geo-map"></div>
+                <div id="mapLegend" class="map-legend"></div>
+                <div id="mapStats" class="map-stats"></div>
+            </div>
+
+            <div id="predictive-view" class="view">
+                <h2>Predictive Analytics</h2>
+                <div class="prediction-cards"></div>
+                <div class="chart-section">
+                    <h3>Enrollment Forecast (Next 90 Days)</h3>
+                    <div id="forecastChart"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Early Warning System</h3>
+                    <div id="earlyWarning"></div>
+                </div>
+            </div>
+
+            <div id="comparative-view" class="view">
+                <h2>Comparative Analysis</h2>
+                <div class="compare-selector">
+                    <label>Select PINs to Compare:</label>
+                    <select id="comparePin1"></select>
+                    <select id="comparePin2"></select>
+                    <select id="comparePin3"></select>
+                    <button id="compareBtn" class="action-btn">Compare</button>
+                </div>
+                <div id="comparisonResults"></div>
+                <div class="chart-section">
+                    <h3>District-Level Comparison</h3>
+                    <div id="districtComparison"></div>
+                </div>
+            </div>
+
+            <div id="age-analysis-view" class="view">
+                <h2>Age Group Analysis</h2>
+                <div class="chart-section">
+                    <h3>Age Distribution Across All PINs</h3>
+                    <div id="ageDistribution"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Suspicious Age Patterns</h3>
+                    <div id="suspiciousAgePatterns"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Age-Specific Growth Rates</h3>
+                    <div id="ageGrowthRates"></div>
+                </div>
+            </div>
+
+            <div id="pattern-recognition-view" class="view">
+                <h2>Pattern Recognition</h2>
+                <div class="chart-section">
+                    <h3>Cluster Analysis</h3>
+                    <div id="clusterAnalysis"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Similar Spike Patterns</h3>
+                    <div id="spikePatterns"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Weekday vs Weekend Patterns</h3>
+                    <div id="weekdayPattern"></div>
+                </div>
+            </div>
+
+            <div id="alerts-view" class="view">
+                <h2>Alert System</h2>
+                <div class="alert-config">
+                    <h3>Configure Alerts</h3>
+                    <div class="alert-rule">
+                        <label>Growth Rate Threshold (%):</label>
+                        <input type="number" id="alertGrowth" value="150">
+                    </div>
+                    <div class="alert-rule">
+                        <label>Enrollment Threshold:</label>
+                        <input type="number" id="alertEnrollment" value="3000">
+                    </div>
+                    <div class="alert-rule">
+                        <label>Days to Policy Deadline:</label>
+                        <input type="number" id="alertDays" value="60">
+                    </div>
+                    <button id="saveAlerts" class="action-btn">Save Alert Rules</button>
+                </div>
+                <div class="chart-section">
+                    <h3>Active Alerts</h3>
+                    <div id="activeAlerts"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Alert History</h3>
+                    <div id="alertHistory"></div>
+                </div>
+            </div>
+
+            <div id="correlation-view" class="view">
+                <h2>Correlation Analysis</h2>
+                <div class="chart-section">
+                    <h3>Policy Event Correlation</h3>
+                    <div id="policyCorrelation"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Multi-Factor Risk Matrix</h3>
+                    <div id="riskMatrix"></div>
+                </div>
+            </div>
+
+            <div id="data-quality-view" class="view">
+                <h2>Data Quality Assessment</h2>
+                <div class="quality-cards"></div>
+                <div class="chart-section">
+                    <h3>Completeness by PIN</h3>
+                    <div id="completenessChart"></div>
+                </div>
+                <div class="chart-section">
+                    <h3>Outliers Detected</h3>
+                    <div id="outliersTable"></div>
+                </div>
+            </div>
+
+            <div id="reports-view" class="view">
+                <h2>Generate Reports</h2>
+                <div class="report-section">
+                    <h3>Executive Summary Report</h3>
+                    <div class="report-options">
+                        <label><input type="checkbox" checked> Include Summary Statistics</label>
+                        <label><input type="checkbox" checked> Include Risk Analysis</label>
+                        <label><input type="checkbox" checked> Include Charts</label>
+                        <label><input type="checkbox" checked> Include Recommendations</label>
+                    </div>
+                    <button id="generatePDF" class="action-btn">Generate PDF Report</button>
+                </div>
+                <div class="report-section">
+                    <h3>Custom Report Builder</h3>
+                    <select id="reportTemplate">
+                        <option>High-Risk PINs Summary</option>
+                        <option>District-wise Analysis</option>
+                        <option>Anomaly Detection Report</option>
+                        <option>Predictive Analysis Report</option>
+                    </select>
+                    <button id="generateCustom" class="action-btn">Generate Custom Report</button>
+                </div>
+            </div>
+
+            <div id="policy-timeline-view" class="view">
+                <h2>Policy Timeline</h2>
+                <div class="timeline"></div>
+            </div>
+
+            <div id="data-export-view" class="view">
+                <h2>Data Export</h2>
+                <div class="export-section">
+                    <div class="filter-group">
+                        <label for="districtFilter">District:</label>
+                        <select id="districtFilter">
+                            <option value="all">All Districts</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="riskFilter">Risk Level:</label>
+                        <select id="riskFilter">
+                            <option value="all">All Levels</option>
+                            <option value="high">High Risk</option>
+                            <option value="medium">Medium Risk</option>
+                            <option value="low">Low Risk</option>
+                        </select>
+                    </div>
+                    <button id="exportBtn" class="export-btn">Export NRC-Ready CSV</button>
+                    <p class="disclaimer">Note: Exported data contains aggregated statistics only. Individual records are not included to maintain privacy compliance.</p>
+                </div>
+            </div>
+
+            <div id="about-view" class="view">
+                <h2>About This Dashboard</h2>
+                <div class="about-content">
+                    <p>The Temporal Inflow Anomaly Tracker monitors Aadhaar enrollment patterns in Assam border PIN codes to identify unusual spikes before policy deadlines.</p>
+                    <h3>Methodology</h3>
+                    <p>Risk levels are calculated based on:</p>
+                    <ul>
+                        <li>Month-over-month enrollment growth rates</li>
+                        <li>Proximity to policy implementation dates</li>
+                        <li>Historical baseline comparisons</li>
+                        <li>Border pushback correlation analysis</li>
+                    </ul>
+                    <h3>Risk Classification</h3>
+                    <p><strong>High Risk:</strong> >200% increase within 60 days of policy deadline</p>
+                    <p><strong>Medium Risk:</strong> 100-200% increase or sustained elevated enrollment</p>
+                    <p><strong>Low Risk:</strong> Normal variation within historical patterns</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="dataProcessor.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="anomalyDetection.js"></script>
+    <script src="predictiveAnalytics.js"></script>
+    <script src="ageAnalysis.js"></script>
+    <script src="patternRecognition.js"></script>
+    <script src="comparativeAnalysis.js"></script>
+    <script src="alertSystem.js"></script>
+    <script src="dataQuality.js"></script>
+    <script src="geographicMap.js"></script>
+    <script src="correlationAnalysis.js"></script>
+    <script src="reportGenerator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
